@@ -1,9 +1,6 @@
 module LVM
 
-using CSV
 using DataFrames
-
-export read
 
 function read(file::String)
     headerindex = Int[]
