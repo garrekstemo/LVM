@@ -10,8 +10,13 @@ function read(file::String)
 
         first_item = findfirst('\t', line)
 
-        if first_item > 13 
-            header = split(line[1:findfirst('\r', line)])
+        if first_item > 13
+
+            if occursin('\r', line)
+                header = split(line[1:findfirst('\r', line)])
+            else
+                header = split(line)
+            end
             push!(headerindex, i)
             push!(headers, header)
         end
