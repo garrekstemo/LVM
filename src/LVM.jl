@@ -1,12 +1,10 @@
 module LVM
 
-using DataFrames
-
 function read(file::String)
+
     headerindex = Int[]
     headers = []
-    data = Array{Float64}[]
-    dfs = DataFrame[]
+    data = Dict()
 
     for (i, line) in enumerate(eachline(file))
 
@@ -30,18 +28,28 @@ function read(file::String)
         colsize = length(split(lines[1]))
         chunk = Array{Float64}(undef, length(lines), colsize)
 
-        for (l, line) in enumerate(lines)
-            line = [parse(Float64, x) for x in split(line)]
-            chunk[l, :] = line
+        for (i, line) in enumerate(lines)
+            for (j, item) in enumerate(split(line))
+                chunk[i, j] = parse(Float64, item)
+            end
         end
-        push!(data, chunk)
 
-        df = DataFrame(chunk, headers[i])
-        push!(dfs, df)
+        for (k, header) in enumerate(headers[i])
+
+            if occursin("wavelength", header)
+                data["Wavelength"] = chunk[:, k]
+            end
+
+            if occursin("CH0_diff", header)
+                data["DiffSignal"] = chunk[:, k]
+            elseif occursin("CH0_", header)
+                data["Signal"] = chunk[:, k]
+            end
+        end
 
     end
     
-    return dfs
+    return data
 end
 
 end # module
