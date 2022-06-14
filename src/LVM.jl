@@ -44,6 +44,9 @@ function read(file::String)
             if occursin("wavelength", header)
                 data["Wavelength"] = chunk[:, k]
             end
+            if occursin("wavenum", header)
+                data["Wavenumber"] = chunk[:, k]
+            end
 
             if occursin("CH0_diff", header)
                 data["DiffSignal"] = chunk[:, k]
