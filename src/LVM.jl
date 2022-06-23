@@ -42,16 +42,16 @@ function read(file::String)
         for (k, header) in enumerate(headers[i])
 
             if occursin("wavelength", header)
-                data["Wavelength"] = chunk[:, k]
+                data["wavelength"] = chunk[:, k]
             end
             if occursin("wavenum", header)
-                data["Wavenumber"] = chunk[:, k]
+                data["wavenumber"] = chunk[:, k]
             end
 
             if occursin("CH0_diff", header)
-                data["DiffSignal"] = chunk[:, k]
+                data["diffsignal"] = chunk[:, k]
             elseif occursin("CH0_", header)
-                data["Signal"] = chunk[:, k]
+                data["signal"] = chunk[:, k]
             end
         end
 
