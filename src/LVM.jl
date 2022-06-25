@@ -1,6 +1,6 @@
 module LVM
 
-function read(file::String)
+function read(file::String; getall::Bool=false)
 
     headerindex = Int[]
     headers = []
@@ -41,23 +41,28 @@ function read(file::String)
 
         for (k, header) in enumerate(headers[i])
 
-            if occursin("wavelength", header)
-                data["wavelength"] = chunk[:, k]
-            end
-            if occursin("wavenum", header)
-                data["wavenumber"] = chunk[:, k]
+            if getall == true
+                data[header] = chunk[:, k]
+            else
+                if occursin("wavelength", header)
+                    data["wavelength"] = chunk[:, k]
+                end
+                if occursin("wavenum", header)
+                    data["wavenumber"] = chunk[:, k]
+                end
+
+                if occursin("CH0_diff", header)
+                    data["diffsignal"] = chunk[:, k]
+                elseif occursin("CH0_", header)
+                    data["signal"] = chunk[:, k]
+                end
             end
 
-            if occursin("CH0_diff", header)
-                data["diffsignal"] = chunk[:, k]
-            elseif occursin("CH0_", header)
-                data["signal"] = chunk[:, k]
-            end
         end
-
     end
     
     return data
 end
+
 
 end # module
