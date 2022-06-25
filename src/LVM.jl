@@ -8,14 +8,13 @@ function read(file::String; getall::Bool=false)
 
     for (i, line) in enumerate(eachline(file))
 
-        first_item = findfirst('\t', line)
+        first_item = line[1:findfirst('\t', line)]
 
-        if first_item > 13
-
+        if tryparse(Float64, first_item) === nothing
             if occursin('\r', line)
                 header = split(line[1:findfirst('\r', line)])
             else
-                header = split(line)
+                header = split(line, '\t')
             end
             push!(headerindex, i)
             push!(headers, header)
@@ -41,23 +40,21 @@ function read(file::String; getall::Bool=false)
 
         for (k, header) in enumerate(headers[i])
 
-            if getall == true
-                data[header] = chunk[:, k]
-            else
-                if occursin("wavelength", header)
-                    data["wavelength"] = chunk[:, k]
-                end
-                if occursin("wavenum", header)
-                    data["wavenumber"] = chunk[:, k]
-                end
+            if occursin("wavelength", header)
+                data["wavelength"] = chunk[:, k]
 
+            elseif occursin("wavenum", header)
+                data["wavenumber"] = chunk[:, k]
+
+            elseif getall == false
                 if occursin("CH0_diff", header)
                     data["diffsignal"] = chunk[:, k]
                 elseif occursin("CH0_", header)
                     data["signal"] = chunk[:, k]
                 end
+            else
+                data[header] = chunk[:, k]
             end
-
         end
     end
     
