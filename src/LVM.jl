@@ -7,10 +7,21 @@ function read(file::String; getall::Bool=false)
     data = Dict()
 
     for (i, line) in enumerate(eachline(file))
+        
+        first_item = "1.0"
+        t_index = findfirst('\t', line)
+        r_index = findfirst('\r', line)
 
-        first_item = line[1:findfirst('\t', line)]
+        if t_index === nothing
+            if !(r_index === nothing)
+                first_item = line[1:r_index]
+            end
+        elseif !(t_index === nothing)
+            first_item = line[1:t_index]
+        end
 
         if tryparse(Float64, first_item) === nothing
+
             if occursin('\r', line)
                 header = split(line[1:findfirst('\r', line)])
             else
@@ -20,7 +31,7 @@ function read(file::String; getall::Bool=false)
             push!(headers, header)
         end
     end
-
+  
     for (i, h) in enumerate(headerindex)
 
         if headerindex[i] == headerindex[end]
@@ -45,6 +56,8 @@ function read(file::String; getall::Bool=false)
 
             elseif occursin("wavenum", header)
                 data["wavenumber"] = chunk[:, k]
+            elseif occursin("Time", header)
+                data["time"] = chunk[:, k]
 
             elseif getall == false
                 if occursin("CH0_diff", header)
