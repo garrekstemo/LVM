@@ -33,7 +33,7 @@ end
 loadallexperiments()
 
 
-function read(file, experiment)
+function readlvm(file, experiment)
 
     headerindices = Int[]
     headers = []
