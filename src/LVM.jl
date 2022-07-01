@@ -1,7 +1,8 @@
 module LVM
 
 export loadexperiment,
-       experimentschemes
+       experimentschemes,
+       readlvm
 
 
 """
