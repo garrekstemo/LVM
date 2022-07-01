@@ -1,1 +1,1 @@
-loadexperiment(:MIR, ["Time", "wavelength", "wavenum"])
+loadexperiment(:MIR, ["Time", "wavelength", "wavenum", "signal", "diffsignal"])
