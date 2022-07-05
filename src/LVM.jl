@@ -9,15 +9,15 @@ export loadexperiment,
 This idea for loading different headers for different experiments
 comes from ColorSchemes.jl.
 """
-struct ExperimentScheme{V <: AbstractVector{<:String}}
-    headers::V
+struct ExperimentScheme{V <: Dict{<:String, <:String}}
+    headermap::V
 end
 
 const experimentschemes = Dict{Symbol, ExperimentScheme}()
 
-function loadexperiment(experiment, headers)
+function loadexperiment(experiment, headermap)
     haskey(experimentschemes, experiment) && println("$experiment overwritten")
-    experimentschemes[experiment] = LVM.ExperimentScheme(headers)
+    experimentschemes[experiment] = LVM.ExperimentScheme(headermap)
     return experimentschemes[experiment]
 end 
 
@@ -48,7 +48,7 @@ function readlvm(file, experiment)
 
         if !(first_tab === nothing)
             first_item = line[1:first_tab]
-            
+
         elseif !(first_return === nothing)
             first_item = line[1:first_return]
         end
@@ -93,16 +93,17 @@ function readlvm(file, experiment)
             end
         end
 
+        headerscheme = experimentschemes[experiment].headermap
+
         for (h, header) in enumerate(headers[i])
 
-            for eheader in experimentschemes[experiment].headers
-                if occursin(String(eheader), header)
-                    data[lowercase(String(eheader))] = chunk[:, h]
+            for (key, val) in headerscheme
+                if occursin(key, header)
+                    data[val] = chunk[:, h]
                 else
                     data[header] = chunk[:, h]
                 end
             end
-
         end
     end
     
