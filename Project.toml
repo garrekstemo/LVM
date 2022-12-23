@@ -1,4 +1,4 @@
 name = "LVM"
 uuid = "76785837-0c5d-45c2-90b8-8e8ea9f9a99d"
 authors = ["Garrek Stemo <8449000+garrekds@users.noreply.github.com>"]
-version = "0.3.2"
+version = "0.3.3"
