@@ -4,5 +4,6 @@ loadexperiment(:MIR,
          "wavenum" => "wavenumber",
          "CH0_ON_" => "on",
          "CH0_OFF_" => "off",
-         "CH0_diff_" => "ΔA")
+         "CH0_diff_" => "diff"
+         )
 )

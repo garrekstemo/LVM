@@ -1,13 +1,32 @@
-const headerscheme = Dict(
-    "Time" => "time", 
-    "wavelength" => "wavelength", 
-    "wavenum" => "wavenumber",
-    "CH0_ON_" => "on",
-    "CH0_OFF_" => "off",
-    "CH0_diff_" => "diff"
-    )
+"""
+This idea for loading different headers for different experiments
+comes from ColorSchemes.jl.
+"""
+struct ExperimentScheme{V <: Dict{<:String, <:String}}
+    headermap::V
+end
 
-function readlvm(file)
+const experimentschemes = Dict{Symbol, ExperimentScheme}()
+
+function loadexperiment(experiment, headermap)
+    haskey(experimentschemes, experiment) && println("$experiment overwritten")
+    experimentschemes[experiment] = LVM.ExperimentScheme(headermap)
+    return experimentschemes[experiment]
+end 
+
+function loadallexperiments()
+    datadir = joinpath(dirname(@__DIR__), "data")
+    include(joinpath(datadir, "experiments.jl"))
+
+    # create experiment schemes as constants
+    for key in keys(experimentschemes)
+        @eval const $key = experimentschemes[$(QuoteNode(key))]
+    end
+end
+
+loadallexperiments()
+
+function readlvm(file, experiment)
 
     headerindices = Int[]
     headers = []
@@ -73,15 +92,4 @@ function readlvm(file)
     end
     
     return data
-end
-
-"""
-    get_datetime(filename)
-
-get the DateTime from the filename of a LVM file.
-"""
-function get_datetime(filename)
-    date = split(filename, "_")[2]
-    time = split(split(filename, "_")[3], ".")[1]
-    return DateTime(string(date, " ", time), "yymmdd HHMMSS") + Dates.Year(2000)
 end

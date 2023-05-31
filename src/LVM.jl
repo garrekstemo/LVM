@@ -45,15 +45,17 @@ mutable struct MIRFile
     fs::Vector{Float64}         # fs
     ΔA::Vector{Float64} 
 
-    function MIRFile(date::String, time::String, sample::String, pumpdelay::Int64, gratingwavelength::Int64, wavenumber::Vector{Float64}, wavelength::Vector{Float64}, time::Vector{Float64}, ΔA::Vector{Float64})
-        new(date, time, sample, pumpdelay, gratingwavelength, wavenumber, wavelength, time, ΔA)
+    function MIRFile(datetime::DateTime, sample::String, pumpdelay::Int64, gratingwavelength::Int64, wavenumber::Vector{Float64}, wavelength::Vector{Float64}, fs::Vector{Float64}, ΔA::Vector{Float64})
+        new(datetime, sample, pumpdelay, gratingwavelength, wavenumber, wavelength, time, ΔA)
     end
 
-    function MIRFile(filename)
-        datetime = get_datetime(filename)
-        dict = readlvm(filename, :MIR)
+    function MIRFile(filepath)
+        file = split(filepath, "/")[end]
+        dt = get_datetime(file)
+
+        dict = readlvm(filepath, :MIR)
         fields = names(dict)
-    # end
+    end
 
 end
 
