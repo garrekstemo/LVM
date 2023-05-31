@@ -17,7 +17,7 @@ Arguments and units
 - `name`: the name of the sample.
 - `grating`: the grating wavelength in nm.
 - `delay`: the pump delay in ps.
-- `cal`: the grating calibration factor in nm.
+- `cal`: the grating calibration factor in cm^-1.
 """
 function readlvm(file; name="sample", grating=0, delay=0, cal=0.0)
 
@@ -92,8 +92,8 @@ function readlvm(file; name="sample", grating=0, delay=0, cal=0.0)
     metadata!(df, "grating", grating)
     metadata!(df, "calibration", cal)
     
-    df.wavelength = df.wavelength .+ cal
-    df.wavenumber = 1e7 ./ df.wavelength
+    df.wavenumber .+= cal
+    df.wavelength = 1e7 ./ df.wavenumber
 
     return df
 end
@@ -108,7 +108,7 @@ Arguments and units
 - `name`: the name of the sample.
 - `grating`: the grating wavelength in nm.
 - `delay`: the pump delay in ps.
-- `cal`: the grating calibration factor in nm.
+- `cal`: the grating calibration factor in cm^-1.
 """
 function readlvm(dir, timestamp; prefix="sig", name="sample", grating=0, delay=0, cal=0.0)
 
@@ -185,8 +185,8 @@ function readlvm(dir, timestamp; prefix="sig", name="sample", grating=0, delay=0
     metadata!(df, "grating", grating)
     metadata!(df, "calibration", cal)
     
-    df.wavelength = df.wavelength .+ cal
-    df.wavenumber = 1e7 ./ df.wavelength
+    df.wavenumber .+= cal
+    df.wavelength = 1e7 ./ df.wavenumber
 
     return df
 end
