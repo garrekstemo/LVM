@@ -33,23 +33,19 @@ function readlvm(file, experiment)
     data = Dict{Any, Vector{Float64}}()
 
     for (i, line) in enumerate(eachline(file))
-
         first_item = "1"
         first_tab = findfirst('\t', line)
         first_return = findfirst('\r', line)
 
         if !(first_tab === nothing)
             first_item = line[1:first_tab]
-
         elseif !(first_return === nothing)
             first_item = line[1:first_return]
         end
 
         if tryparse(Float64, first_item) === nothing
-
             if occursin("\t\r", line)
                 header = split(line[1:findfirst("\t\r", line)[1]])
-
             elseif occursin('\r', line)
                 header = split(line[1:findfirst('\r', line)])
             end
@@ -76,7 +72,6 @@ function readlvm(file, experiment)
 
         # We need the +1 row for the first line.
         chunk = Array{Float64}(undef, length(datalines) + 1, length(headers[i]))
-
         chunk[1, :] = [parse(Float64, x) for x in split(firstline, '\t')]
 
         for (j, line) in enumerate(datalines)
@@ -88,7 +83,6 @@ function readlvm(file, experiment)
         headerscheme = experimentschemes[experiment].headermap
 
         for (h, header) in enumerate(headers[i])
-
             for (key, val) in headerscheme
                 if occursin(key, header)
                     data[val] = chunk[:, h]
@@ -106,7 +100,6 @@ end
     lvm_to_df(path, date, time, prefix="sig")
 
 Retrieve raw data for .lvm files for the MIR project and store in a DataFrame.
-Depends on LVM.jl package to parse the file.
 """
 function lvm_to_df(path, date, time, prefix="sig")
     filename = prefix * "_" * date * "_" * time * ".lvm"
