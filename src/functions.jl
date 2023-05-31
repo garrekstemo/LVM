@@ -92,6 +92,9 @@ function readlvm(file; name="sample", grating=0, delay=0, cal=0.0)
     metadata!(df, "grating", grating)
     metadata!(df, "calibration", cal)
     
+    df.wavelength = df.wavelength .+ cal
+    df.wavenumber = 1e7 ./ df.wavelength
+
     return df
 end
 
@@ -182,6 +185,9 @@ function readlvm(dir, timestamp; prefix="sig", name="sample", grating=0, delay=0
     metadata!(df, "grating", grating)
     metadata!(df, "calibration", cal)
     
+    df.wavelength = df.wavelength .+ cal
+    df.wavenumber = 1e7 ./ df.wavelength
+
     return df
 end
 
