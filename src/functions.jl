@@ -105,3 +105,9 @@ function lvm_to_df(path, date, time, prefix="sig")
     filename = prefix * "_" * date * "_" * time * ".lvm"
     return DataFrame(LVM.readlvm(joinpath(path, filename), :MIR))
 end
+
+function get_datetime(filename)
+    date = split(filename, "_")[2]
+    time = split(split(filename, "_")[3], ".")[1]
+    return DateTime(string(date, " ", time), "yymmdd HHMMSS") + Dates.Year(2000)
+end
