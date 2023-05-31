@@ -96,23 +96,6 @@ function readlvm(file, experiment)
     return data
 end
 
-"""
-    lvm_to_df(path, date, time, prefix="sig")
-
-Retrieve raw data for .lvm files for the MIR project and store in a DataFrame.
-"""
-function lvm_to_df(filepath)
-    file = split(filepath, "/")[end]
-    path = dirname(filepath)
-    prefix = split(file, "_")[1]
-    suffix = split(split(file, "_")[end], ".")[end]
-    dt = get_datetime(file)
-    time = Dates.format(Time(dt), "HHMMSS")
-    date = Dates.format(Date(dt), "yymmdd")
-    filename = prefix * "_" * date * "_" * time * "." * suffix
-    return DataFrame(LVM.readlvm(joinpath(path, filename), :MIR))
-end
-
 function get_datetime(filename)
     date = split(filename, "_")[2]
     time = split(split(filename, "_")[3], ".")[1]
