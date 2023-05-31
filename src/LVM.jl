@@ -3,7 +3,8 @@ module LVM
 export loadexperiment,
        experimentschemes,
        readlvm,
-       lvm_to_df
+       lvm_to_df,
+       get_datetime
 
 using DataFrames
 using Dates
