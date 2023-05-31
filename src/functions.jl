@@ -7,11 +7,23 @@ const headerscheme = Dict(
     "CH0_diff_" => "diff"
     )
 
-function readlvm(file)
+"""
+    readlvm(file; name="sample", grating=nothing, pumpdelay=nothing)
+
+Read a LabView Measurement file (.lvm) and return a `DataFrame` of the data with metadata.
+
+Arguments and units
+- `file`: the path to the .lvm file.
+- `name`: the name of the sample.
+- `grating`: the grating wavelength in nm.
+- `delay`: the pump delay in ps.
+- `cal`: the grating calibration factor in nm.
+"""
+function readlvm(file; name="sample", grating=0, delay=0, cal=0.0)
 
     headerindices = Int[]
     headers = []
-    data = Dict{Any, Vector{Float64}}()
+    df = DataFrame()
 
     for (i, line) in enumerate(eachline(file))
         first_item = "1"
@@ -64,21 +76,29 @@ function readlvm(file)
         for (h, header) in enumerate(headers[i])
             for (key, val) in headerscheme
                 if occursin(key, header)
-                    data[val] = chunk[:, h]
+                    df[!, val] = chunk[:, h]
                 else
-                    data[header] = chunk[:, h]
+                    df[!, header] = chunk[:, h]
                 end
             end
         end
     end
+
+    filename = split(file, "/")[end]
+    datetime = get_datetime(filename)
+    metadata!(df, "name", name)
+    metadata!(df, "datetime", datetime)
+    metadata!(df, "delay", delay)
+    metadata!(df, "grating", grating)
+    metadata!(df, "calibration", cal)
     
-    return data
+    return df
 end
 
 """
     get_datetime(filename)
 
-get the DateTime from the filename of a LVM file.
+Get the DateTime from the filename of a LVM file.
 """
 function get_datetime(filename)
     date = split(filename, "_")[2]
