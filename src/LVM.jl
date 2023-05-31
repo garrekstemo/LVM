@@ -1,7 +1,8 @@
 module LVM
 
 export readlvm,
-       get_datetime
+       get_datetime,
+       make_filename
 
 using DataFrames
 using Dates
