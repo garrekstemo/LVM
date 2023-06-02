@@ -185,8 +185,12 @@ function readlvm(dir, timestamp; prefix="sig", name="sample", grating=0, delay=0
     metadata!(df, "grating", grating)
     metadata!(df, "calibration", cal)
     
-    df.wavenumber .+= cal
-    df.wavelength = 1e7 ./ df.wavenumber
+    if "wavelength" in names(df)
+        df.wavenumber .+= cal
+        df.wavelength = 1e7 ./ df.wavenumber
+    elseif "time" in names(df)
+        df.time .+= cal
+    end
 
     return df
 end
