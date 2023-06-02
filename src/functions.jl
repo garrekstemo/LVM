@@ -198,10 +198,7 @@ Make a filename for a LVM file from the path to a file and the file timestamp
 (not including the date).
 """
 function make_filename(dir, timestamp; prefix = "sig")
-    if last(dir) == '/'
-        dir = dir[1:end-1]
-    end
-    date = split(dir, "/")[end]
+    date = splitpath(dir)[end]
     filename = string(prefix, "_", date, "_", string(timestamp), ".lvm")
     return joinpath(dir, filename)
 end
