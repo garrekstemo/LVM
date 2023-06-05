@@ -120,6 +120,7 @@ Arguments and units
 function readlvm(dir, timestamp; prefix="sig", name="sample", grating=0, delay=0, cal=0.0)
     readlvm(make_filename(dir, timestamp; prefix), name=name, grating=grating, delay=delay, cal=cal)
 end
+
 """
     sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay=0, cal=0.0)
 
