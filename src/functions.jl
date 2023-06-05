@@ -120,7 +120,12 @@ Arguments and units
 function readlvm(dir, timestamp; prefix="sig", name="sample", grating=0, delay=0, cal=0.0)
     readlvm(make_filename(dir, timestamp; prefix), name=name, grating=grating, delay=delay, cal=cal)
 end
+"""
+    sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay=0, cal=0.0)
 
+Calculate the standard error of measurement on the tmp files
+given an averaged measurement file name.
+"""
 function sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay=0, cal=0.0)
     all_tmp_files = filter(x -> !(contains(x, "debug")), readdir(joinpath(dir, "TEMP")))
     times = @. Dates.format(Time(get_datetime(all_tmp_files)), "HHMMSS")
