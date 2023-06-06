@@ -87,7 +87,7 @@ function readlvm(file; name="sample", grating=0, delay=0, cal=0.0)
         end
     end
 
-    filename = split(file, "/")[end]
+    filename = splitpath(file)[end]
     datetime = get_datetime(filename)
     metadata!(df, "name", name)
     metadata!(df, "datetime", datetime)
@@ -157,7 +157,8 @@ end
 """
     get_datetime(filename)
 
-Get the `DateTime` from the filename of a LVM file.
+Get the `DateTime` from the file name of a LVM file.
+Does not take path to file, just the file name.
 """
 function get_datetime(filename)
     date = split(filename, "_")[2]
