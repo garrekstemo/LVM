@@ -135,7 +135,8 @@ function sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay
     df = DataFrame()
     for tmpfile in tmpfiles
         tmpdf = readlvm(joinpath(dir, "TEMP", tmpfile), name=name, grating=grating, delay=delay, cal=cal)
-        df[!, Dates.format(Time(get_datetime(tmpfile)), "HHMMSS")] = tmpdf[!, ycol]
+        datetime = splitpath(dir)[end]
+        df[!, Dates.format(Time(get_datetime(datetime)), "HHMMSS")] = tmpdf[!, ycol]
     end
     sem = select(df, AsTable(:) => ByRow(StatsBase.sem))
 end
