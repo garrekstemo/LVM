@@ -121,11 +121,40 @@ function readlvm(dir, timestamp; prefix="sig", name="sample", grating=0, delay=0
     readlvm(make_filename(dir, timestamp; prefix), name=name, grating=grating, delay=delay, cal=cal)
 end
 
+function readlvm(dir, timestamp, nscans; prefix="sig", name="sample", grating=0, delay=0, cal=0.0)
+    df = readlvm(make_filename(dir, timestamp; prefix), name=name, grating=grating, delay=delay, cal=cal)
+
+    all_tmp_files = filter(x -> !(contains(x, "debug")), readdir(joinpath(dir, "TEMP")))
+    times = @. Dates.format(Time(get_datetime(all_tmp_files)), "HHMMSS")
+    last_tmp = searchsortedlast(times, string(timestamp))
+    tmpfiles = all_tmp_files[last_tmp - nscans + 1:last_tmp]
+
+    no_average = ["wavelength", "wavenumber", "time"]
+
+    sem_dfs = DataFrame[]
+    for tmpfile in tmpfiles
+        df_tmp = readlvm(joinpath(dir, "TEMP", tmpfile), name=name, grating=grating, delay=delay, cal=cal)
+        push!(sem_dfs, df_tmp)
+    end
+    for (key, header) in headerscheme
+        df_tmp = DataFrame()
+        if !(header in no_average)
+            new_header = header * "_sem"
+            
+            df_tmp[!, new_header] = sem([df_tmp[!, header] for df_tmp in sem_dfs]; dims=1)
+        end
+    end
+    df
+end
+
 """
     sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay=0, cal=0.0)
 
 Calculate the standard error of measurement on the tmp files
 given an averaged measurement file name.
+
+ycol: the column to calculate the standard error of measurement on.
+nscans: the number of scans to average over.
 """
 function sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay=0, cal=0.0)
     all_tmp_files = filter(x -> !(contains(x, "debug")), readdir(joinpath(dir, "TEMP")))
@@ -135,8 +164,8 @@ function sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay
     df = DataFrame()
     for tmpfile in tmpfiles
         tmpdf = readlvm(joinpath(dir, "TEMP", tmpfile), name=name, grating=grating, delay=delay, cal=cal)
-        datetime = splitpath(dir)[end]
-        df[!, Dates.format(Time(get_datetime(datetime)), "HHMMSS")] = tmpdf[!, ycol]
+        time = Dates.format(Time(get_datetime(tmpfile)), "HHMMSS")
+        df[!, time] = tmpdf[!, ycol]
     end
     sem = select(df, AsTable(:) => ByRow(StatsBase.sem))
 end
@@ -150,6 +179,9 @@ which has the format "yymmdd".
 """
 function make_filename(dir, timestamp; prefix = "sig")
     date = splitpath(dir)[end]
+    if prefix == "tmp"
+        date = splitpath(dir)[end-1]
+    end
     filename = string(prefix, "_", date, "_", string(timestamp), ".lvm")
     return joinpath(dir, filename)
 end
