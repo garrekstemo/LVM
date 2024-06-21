@@ -11,18 +11,17 @@ const headerscheme = Dict(
     )
 
 """
-    readlvm(file; name="sample", grating=nothing, pumpdelay=nothing)
+    readlvm(file; wavelength, delay, cal)
 
 Read a LabView Measurement file (.lvm) and return a `DataFrame` of the data with metadata.
 
 Arguments and units
 - `file`: the path to the .lvm file.
 - `name`: the name of the sample.
-- `grating`: the grating wavelength in nm.
+- `wavelength`: the grating wavelength in nm.
 - `delay`: the pump delay in ps.
-- `cal`: the grating calibration factor in cm^-1.
 """
-function readlvm(file; name="sample", grating=0, delay=0, cal=0.0)
+function readlvm(file; wavelength=0, delay=0)
 
     headerindices = Int[]
     headers = []
@@ -86,43 +85,27 @@ function readlvm(file; name="sample", grating=0, delay=0, cal=0.0)
             end
         end
     end
-
-    filename = splitpath(file)[end]
-    datetime = get_datetime(filename)
-    metadata!(df, "name", name)
-    metadata!(df, "datetime", datetime)
-    metadata!(df, "delay", delay)
-    metadata!(df, "grating", grating)
-    metadata!(df, "calibration", cal)
-    
-    if "wavelength" in names(df)
-        df.wavenumber .+= cal
-        df.wavelength = 1e7 ./ df.wavenumber
-    elseif "time" in names(df)
-        df.time .+= cal
-    end
-
     return df
 end
 
 """
-    readlvm(dir, timestamp; prefix="sig", name="sample", grating=nothing, pumpdelay=nothing)
+    readlvm(dir, timestamp; prefix="sig", wavelength=nothing, pumpdelay=nothing)
 
 Read a LabView Measurement file (.lvm) and return a `DataFrame` of the data with metadata.
 
 Arguments and units
 - `file`: the path to the .lvm file.
 - `name`: the name of the sample.
-- `grating`: the grating wavelength in nm.
+- `wavelength`: the grating wavelength in nm.
 - `delay`: the pump delay in ps.
 - `cal`: the grating calibration factor in cm^-1.
 """
-function readlvm(dir, timestamp; prefix="sig", name="sample", grating=0, delay=0, cal=0.0)
-    readlvm(make_filename(dir, timestamp; prefix), name=name, grating=grating, delay=delay, cal=cal)
+function readlvm(dir, timestamp; prefix="sig", wavelength=0, delay=0)
+    readlvm(make_filename(dir, timestamp; prefix), wavelength=wavelength, delay=delay)
 end
 
-function readlvm(dir, timestamp, nscans; prefix="sig", name="sample", grating=0, delay=0, cal=0.0)
-    df = readlvm(make_filename(dir, timestamp; prefix), name=name, grating=grating, delay=delay, cal=cal)
+function readlvm(dir, timestamp, nscans; prefix="sig", wavelength=0, delay=0, cal=0.0)
+    df = readlvm(make_filename(dir, timestamp; prefix), wavelength=wavelength, delay=delay)
 
     all_tmp_files = filter(x -> !(contains(x, "debug")), readdir(joinpath(dir, "TEMP")))
     times = @. Dates.format(Time(get_datetime(all_tmp_files)), "HHMMSS")
@@ -130,10 +113,10 @@ function readlvm(dir, timestamp, nscans; prefix="sig", name="sample", grating=0,
     tmpfiles = all_tmp_files[last_tmp - nscans + 1:last_tmp]
 
     no_average = ["wavelength", "wavenumber", "time"]
-
+  
     sem_dfs = DataFrame[]
     for tmpfile in tmpfiles
-        df_tmp = readlvm(joinpath(dir, "TEMP", tmpfile), name=name, grating=grating, delay=delay, cal=cal)
+        df_tmp = readlvm(joinpath(dir, "TEMP", tmpfile), wavelength=wavelength, delay=delay)
         push!(sem_dfs, df_tmp)
     end
     for (key, header) in headerscheme
@@ -148,7 +131,7 @@ function readlvm(dir, timestamp, nscans; prefix="sig", name="sample", grating=0,
 end
 
 """
-    sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay=0, cal=0.0)
+    sem_lvm(dir, timestamp, ycol, nscans=1; wavelength=0, delay=0, cal=0.0)
 
 Calculate the standard error of measurement on the tmp files
 given an averaged measurement file name.
@@ -156,14 +139,14 @@ given an averaged measurement file name.
 ycol: the column to calculate the standard error of measurement on.
 nscans: the number of scans to average over.
 """
-function sem_lvm(dir, timestamp, ycol, nscans=1; name="sample", grating=0, delay=0, cal=0.0)
+function sem_lvm(dir, timestamp, ycol, nscans=1; wavelength=0, delay=0)
     all_tmp_files = filter(x -> !(contains(x, "debug")), readdir(joinpath(dir, "TEMP")))
     times = @. Dates.format(Time(get_datetime(all_tmp_files)), "HHMMSS")
     last_tmp = searchsortedlast(times, string(timestamp))
     tmpfiles = all_tmp_files[last_tmp - nscans + 1:last_tmp]
     df = DataFrame()
     for tmpfile in tmpfiles
-        tmpdf = readlvm(joinpath(dir, "TEMP", tmpfile), name=name, grating=grating, delay=delay, cal=cal)
+        tmpdf = readlvm(joinpath(dir, "TEMP", tmpfile), wavelength=wavelength, delay=delay)
         time = Dates.format(Time(get_datetime(tmpfile)), "HHMMSS")
         df[!, time] = tmpdf[!, ycol]
     end
@@ -180,6 +163,10 @@ which has the format "yymmdd".
 function make_filename(dir, timestamp; prefix = "sig")
     date = splitpath(dir)[end]
     if prefix == "tmp"
+        filepath = splitpath(dir)
+        if filepath[end] != "TEMP"
+            dir = joinpath(dir, "TEMP")
+        end
         date = splitpath(dir)[end-1]
     end
     filename = string(prefix, "_", date, "_", string(timestamp), ".lvm")
