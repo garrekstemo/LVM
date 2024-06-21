@@ -113,8 +113,10 @@ function readlvm(dir, timestamp, nscans; prefix="sig", wavelength=0, delay=0)
         df_tmp = DataFrame()
         if !(header in no_average)
             new_header = header * "_sd"
-            
-            df_tmp[!, new_header] = std([df_tmp[!, header] for df_tmp in sd_dfs]; dims=1)
+            # df_tmp[!, new_header] = std.([df_tmp[!, header] for df_tmp in sd_dfs]; dims=1)
+            dfs = [df for df in sd_dfs]
+            # st_dev = std(df_tmp[!, header])
+            println(length(dfs))
         end
     end
     df
@@ -134,13 +136,13 @@ function sd_lvm(dir, timestamp, ycol, nscans=1; wavelength=0, delay=0)
     times = @. Dates.format(Time(get_datetime(all_tmp_files)), "HHMMSS")
     last_tmp = searchsortedlast(times, string(timestamp))
     tmpfiles = all_tmp_files[last_tmp - nscans + 1:last_tmp]
-    df = DataFrame()
+    tmp_dfs = []
     for tmpfile in tmpfiles
         tmpdf = readlvm(joinpath(dir, "TEMP", tmpfile), wavelength=wavelength, delay=delay)
-        time = Dates.format(Time(get_datetime(tmpfile)), "HHMMSS")
-        df[!, time] = tmpdf[!, ycol]
+        push!(tmp_dfs, tmpdf[!, ycol])
     end
-    standard_deviation = select(df, AsTable(:) => ByRow(Statistics.std))
+    tmp_dfs = hcat(tmp_dfs...)
+    return std(tmp_dfs, dims=2)
 end
 
 """

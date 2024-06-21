@@ -1,9 +1,7 @@
 module LVM
 
 export readlvm,
-       sem_lvm,
-       get_datetime,
-       make_filename
+       sd_lvm
 
 using DataFrames
 using Dates
