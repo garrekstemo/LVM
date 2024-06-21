@@ -7,7 +7,7 @@ export readlvm,
 
 using DataFrames
 using Dates
-using StatsBase
+using Statistics
 
 include("functions.jl")
 
